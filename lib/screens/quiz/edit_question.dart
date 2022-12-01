@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:quiz_app/screens/quiz/welcome_quiz.dart';
-import 'package:random_string/random_string.dart';
 import '../../models/question_bank.dart';
 import '../../models/quiz_model.dart';
 import '../../widgets/circle_widget.dart';

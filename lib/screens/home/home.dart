@@ -25,9 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final _auth = FirebaseAuth.instance;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    if (_auth.currentUser?.email == administrator){
+    if (_auth.currentUser?.email == administrator) {
       setState(() {
         admin = true;
       });
@@ -88,9 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
               gradient: LinearGradient(
-            colors: const [Colors.teal, Colors.indigo, Colors.red],
+            colors: [Colors.teal, Colors.indigo, Colors.red],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
           )),
@@ -133,7 +133,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: dataSnapshot['imageUrl'] != ''
                                   ? BoxDecoration(
                                       image: DecorationImage(
-                                        image: NetworkImage(dataSnapshot['imageUrl']),
+                                        image: NetworkImage(
+                                            dataSnapshot['imageUrl']),
                                         fit: BoxFit.cover,
                                       ),
                                       borderRadius: const BorderRadius.all(
@@ -172,11 +173,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   child: Container(
                                                     height: 40,
                                                     width: 40,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                      color: Colors.white54,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white70,
                                                       borderRadius:
-                                                          BorderRadius.all(
+                                                          const BorderRadius
+                                                                  .all(
                                                               Radius.circular(
                                                                   10)),
                                                     ),
@@ -284,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       width: 40,
                                                       decoration:
                                                           const BoxDecoration(
-                                                        color: Colors.white54,
+                                                        color: Colors.white70,
                                                         borderRadius:
                                                             BorderRadius.all(
                                                                 Radius.circular(
@@ -292,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       ),
                                                       child: const Icon(
                                                           FontAwesomeIcons
-                                                              .trash)),
+                                                              .trashCan)),
                                                 ),
                                               ],
                                             ),
@@ -301,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: const BoxDecoration(
-                                        color: Colors.white54,
+                                        color: Colors.white70,
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(20)),
                                       ),
@@ -344,27 +345,29 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
-      floatingActionButton: admin ? Padding(
-        padding: const EdgeInsets.only(bottom: 50.0, right: 10),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const CreateQuizScreen()));
-          },
-          child: Container(
-              height: 60,
-              width: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: const [Colors.teal, Colors.indigo, Colors.red],
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                ),
+      floatingActionButton: admin
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 50.0, right: 10),
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const CreateQuizScreen()));
+                },
+                child: Container(
+                    height: 60,
+                    width: 60,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Colors.teal, Colors.indigo, Colors.red],
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                      ),
+                    ),
+                    child: const Icon(Icons.add)),
               ),
-              child: const Icon(Icons.add)),
-        ),
-      ):const SizedBox(),
+            )
+          : const SizedBox(),
     );
   }
 }

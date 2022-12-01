@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/screens/quiz/welcome_quiz.dart';
-import 'package:quiz_app/widgets/stopwatch_countdown.dart';
 import 'package:intl/intl.dart';
 import 'package:random_string/random_string.dart';
 import '../../models/question_bank.dart';
@@ -27,6 +26,48 @@ class _QuizPlayState extends State<QuizPlay> {
   int _questionNumber = 0;
   int? maxLength;
 
+  static const initTime = 60;
+  int seconds = initTime;
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  void startTimer() {
+    timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (seconds > 0) {
+        setState(() {
+          seconds--;
+        });
+      } else if (seconds == 0) {
+        nextQuestion();
+      }
+    });
+  }
+
+  void resetTimer() {
+    setState(() => seconds = initTime);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void nextQuestion() {
+    if (_questionNumber < maxLength! - 1) {
+      setState(() {
+        _questionNumber++;
+      });
+      resetTimer();
+    } else if (_questionNumber == maxLength! - 1) {
+      showWarning();
+    }
+  }
+
   void checkCorrectAnswer(String answer, String userPick, int location) {
     if (answer == userPick) {
       setState(() {
@@ -49,54 +90,62 @@ class _QuizPlayState extends State<QuizPlay> {
     return Colors.white70;
   }
 
+  void showWarning() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Kết Quả'),
+            titleTextStyle: const TextStyle(fontSize: 30, color: Colors.blue),
+            content: correctNumber == 0
+                ? const Text('Bạn không trả lời đúng câu nào!')
+                : Text('Bạn trả lời đúng $correctNumber câu!'),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Okay'),
+                onPressed: () async {
+                  var historyId = randomAlphaNumeric(20);
+                  DateTime now = DateTime.now();
+                  String formattedDate =
+                      DateFormat('H:mm:s, d/M/y').format(now);
+                  await FirebaseFirestore.instance
+                      .collection('historyQuiz')
+                      .doc(historyId)
+                      .set({
+                    'historyId': historyId,
+                    'user': _auth.currentUser?.email,
+                    'quizId': snapshotInfoQuiz['quizId'],
+                    'title': snapshotInfoQuiz['title'],
+                    'categories': snapshotInfoQuiz['categories'],
+                    'date': formattedDate,
+                    'score': correctNumber,
+                    'timestamp': DateTime.now(),
+                  }).catchError((e) {
+                    print(e);
+                  });
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const HomeScreen()));
+                  timer?.cancel();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
   void checkAnswerAndFinish(String answer, String userPick, int location) {
-    // listQuestion.shuffle();
     setState(() {
       answerSelected = true;
       checkCorrectAnswer(answer, userPick, location);
       if (_questionNumber + 1 == maxLength) {
         Timer(const Duration(seconds: 1), () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Kết Quả'),
-                  titleTextStyle:
-                      const TextStyle(fontSize: 30, color: Colors.blue),
-                  content: correctNumber == 0
-                      ? const Text('Bạn không trả lời đúng câu nào!')
-                      : Text('Bạn trả lời đúng $correctNumber câu!'),
-                  actions: [
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        textStyle: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      child: const Text('Okay'),
-                      onPressed: () async {
-                        var historyId = randomAlphaNumeric(20);
-                        DateTime now = DateTime.now();
-                        String formattedDate = DateFormat('kk:mm:ss, d/M/yyyy').format(now);
-                        await FirebaseFirestore.instance.collection('historyQuiz').doc(historyId).set({
-                          'historyId': historyId,
-                          'user': _auth.currentUser?.email,
-                          'quizId': snapshotInfoQuiz['quizId'],
-                          'title': snapshotInfoQuiz['title'],
-                          'categories': snapshotInfoQuiz['categories'],
-                          'time': formattedDate,
-                          'score': correctNumber,
-                        }).catchError((e) {
-                          print(e);
-                        });
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const HomeScreen()));
-                      },
-                    ),
-                  ],
-                );
-              });
+          showWarning();
         });
       } else {
-        Timer(const Duration(seconds: 1), () {
+        Timer(const Duration(seconds: 2), () {
           setState(() {
             if (answerSelected) {
               _questionNumber++;
@@ -105,6 +154,7 @@ class _QuizPlayState extends State<QuizPlay> {
               answerSelectedFalse = [false, false, false, false];
             }
           });
+          resetTimer();
         });
       }
     });
@@ -116,60 +166,22 @@ class _QuizPlayState extends State<QuizPlay> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        // centerTitle: true,
+        centerTitle: true,
         automaticallyImplyLeading: false,
-        elevation: 0,
-        // title: Text(
-        //   widget.dataSnapshot['title'],
-        //   style: const TextStyle(fontSize: 25),
-        // ),
-        actions: [
-          GestureDetector(
-              child: const Center(
-                  widthFactor: 2,
-                  child: Text(
-                    'Quit',
-                    style: TextStyle(fontSize: 15, color: Colors.white),
-                  )),
-              onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Warning'),
-                        titleTextStyle:
-                            const TextStyle(fontSize: 30, color: Colors.blue),
-                        content: const Text('Do you want to exit?'),
-                        actions: [
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              textStyle: Theme.of(context).textTheme.labelLarge,
-                            ),
-                            child: const Text('Yes'),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => const HomeScreen()));
-                            },
-                          ),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              textStyle: Theme.of(context).textTheme.labelLarge,
-                            ),
-                            child: const Text('No'),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              })
-        ],
+        toolbarHeight: 100,
+        elevation: 1,
+        title: Text(
+          snapshotInfoQuiz['title'],
+          style: const TextStyle(fontSize: 23),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 3,
+        ),
       ),
       body: Container(
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.only(top: 30),
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: const [Colors.teal, Colors.indigo, Colors.red],
+            colors: [Colors.teal, Colors.indigo, Colors.red],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
           ),
@@ -215,32 +227,51 @@ class _QuizPlayState extends State<QuizPlay> {
             }
             maxLength = questions.length;
             return Padding(
-              padding: const EdgeInsets.only(top: 40.0),
+              padding: const EdgeInsets.only(top: 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // snapshotInfoQuiz['time'] == 0
-                  //     ? const SizedBox()
-                  //     : const Countdown(),
-                  // const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.only(left: 20.0),
-                    child: Text.rich(
-                      TextSpan(
-                        text: 'Question ${_questionNumber + 1}',
-                        style:
-                            const TextStyle(fontSize: 20, color: Colors.white),
-                        children: [
+                    child: Row(
+                      children: [
+                        Text.rich(
                           TextSpan(
-                            text: '/${snapshot.data!.docs.length}',
+                            text: 'Question ${_questionNumber + 1}',
                             style: const TextStyle(
                                 fontSize: 20, color: Colors.white),
+                            children: [
+                              TextSpan(
+                                text: '/${snapshot.data!.docs.length}',
+                                style: const TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.all(5),
+                          child: Container(
+                            color: Colors.transparent,
+                            height: 30,
+                            width: 100,
+                            child: Center(
+                              child: Text(
+                                '$seconds',
+                                style: const TextStyle(
+                                    fontSize: 28, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Divider(thickness: 2.5),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 20, right: 20),
+                    child: Divider(thickness: 1, color: Colors.black54),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Container(
@@ -351,6 +382,58 @@ class _QuizPlayState extends State<QuizPlay> {
                     ),
                   ),
                   const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                          child: const Center(
+                              widthFactor: 2,
+                              child: Text(
+                                'Quit',
+                                style: TextStyle(
+                                    fontSize: 15, color: Colors.white),
+                              )),
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Warning'),
+                                    titleTextStyle: const TextStyle(
+                                        fontSize: 30, color: Colors.blue),
+                                    content: const Text('Do you want to exit?'),
+                                    actions: [
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          textStyle: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge,
+                                        ),
+                                        child: const Text('Yes'),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const HomeScreen()));
+                                        },
+                                      ),
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          textStyle: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge,
+                                        ),
+                                        child: const Text('No'),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                });
+                          }),
+                    ],
+                  ),
                 ],
               ),
             );

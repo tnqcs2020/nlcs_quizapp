@@ -4,7 +4,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quiz_app/widgets/gradient_button.dart';
@@ -24,8 +23,7 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
   final _formKey = GlobalKey<FormState>();
   final categoriesCtrl = TextEditingController();
   final titleCtrl = TextEditingController();
-  List<String> tempChange = ["",""];
-  // final timeCtrl = TextEditingController();
+  List<String> tempChange = ["", ""];
   String? imageUrl;
   String? selectOption;
   final items = ['Question', 'Answer', 'Question And Answer', 'No Shuffle'];
@@ -35,7 +33,6 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
       FirebaseFirestore.instance.collection('quiz').doc(widget.quizId).update({
         'title': tempChange[0],
         'categories': tempChange[1],
-        // 'time': int.parse(timeCtrl.text),
         'shuffle': selectOption,
       });
       Navigator.pushReplacement(
@@ -60,9 +57,9 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
         ),
         centerTitle: true,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
               gradient: LinearGradient(
-            colors: const [Colors.teal, Colors.indigo, Colors.red],
+            colors: [Colors.teal, Colors.indigo, Colors.red],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
           )),
@@ -86,15 +83,13 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
               final DocumentSnapshot dataSnapshot;
               dataSnapshot = snapshot.data;
               titleCtrl.text =
-              tempChange[0] != "" ? tempChange[0] : dataSnapshot['title'];
+                  tempChange[0] != "" ? tempChange[0] : dataSnapshot['title'];
               categoriesCtrl.text = tempChange[1] != ""
                   ? tempChange[1]
                   : dataSnapshot['categories'];
               tempChange[0] = titleCtrl.text;
               tempChange[1] = categoriesCtrl.text;
-              // timeCtrl.text = dataSnapshot['time'].toString();
               imageUrl = dataSnapshot['imageUrl'];
-              // shuffle = dataSnapshot['shuffle'];
               return Column(
                 children: [
                   Form(
@@ -197,26 +192,6 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
                           keyboardType: TextInputType.text,
                           textInputAction: TextInputAction.done,
                         ),
-                        // const SizedBox(
-                        //   height: 20,
-                        // ),
-                        // TextFormField(
-                        //   controller: timeCtrl,
-                        //   decoration: const InputDecoration(
-                        //     hintText: 'Please enter time of quiz.',
-                        //     labelText: 'Time Of Quiz',
-                        //     prefixIcon: Icon(Icons.timer),
-                        //     border: OutlineInputBorder(
-                        //       borderRadius:
-                        //           BorderRadius.all(Radius.circular(20)),
-                        //     ),
-                        //   ),
-                        //   validator: (value) => (int.parse(value!) == 0
-                        //       ? 'Number(>= 1) or empty.'
-                        //       : null),
-                        //   keyboardType: TextInputType.text,
-                        //   textInputAction: TextInputAction.done,
-                        // ),
                         const SizedBox(
                           height: 20,
                         ),
@@ -224,8 +199,7 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
                           Text(
                             'Shuffle',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18),
+                                fontWeight: FontWeight.bold, fontSize: 18),
                           )
                         ]),
                         const SizedBox(height: 20),
@@ -235,8 +209,8 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
                               horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: Colors.black, width: 1)),
+                              border:
+                                  Border.all(color: Colors.black, width: 1)),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               hint: Text(
@@ -403,6 +377,7 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
       ),
     );
   }
+
   DropdownMenuItem<String> buildMainItem(String item) {
     return DropdownMenuItem(
       value: item,
