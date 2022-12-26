@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:quiz_app/screens/quiz/edit_question.dart';
+import 'package:quiz_app/widgets/gradient_button.dart';
 import 'package:random_string/random_string.dart';
 import '../../models/quiz_model.dart';
-import '../../widgets/circle_widget.dart';
 
 class AddQuestionScreen extends StatefulWidget {
   final String quizId;
@@ -55,7 +56,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         "answer": answer,
         "questionId": questionId,
         "positionAnswer": positionAnswer,
-        "totalQuestion": totalQuestion.toString(),
+        "totalQuestion": totalQuestion.toString()
       };
       addQuestionData(questionMap, widget.quizId).then((value) {
         question = "";
@@ -75,171 +76,172 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    totalQuestion = int.parse(widget.totalQuestion);
+    totalQuestion = int.parse(widget.totalQuestion) + 1;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: const BackButton(
-          color: Colors.black54,
-        ),
         title: const Text(
           'Add Question',
-          style: TextStyle(color: Colors.black, fontSize: 30),
+          style: TextStyle(color: Colors.white, fontSize: 30),
         ),
         centerTitle: true,
         elevation: 0.0,
-        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+              gradient: LinearGradient(
+            colors: [Colors.teal, Colors.indigo, Colors.red],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+          )),
+        ),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(top: 20),
         child: Form(
-                key: _formKey,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        validator: (val) =>
-                            val!.isEmpty ? "Not be empty" : null,
-                        decoration: const InputDecoration(hintText: "Question"),
-                        onChanged: (val) {
-                          question = val;
-                        },
-                        textInputAction: TextInputAction.next,
-                        autofocus: true,
+          key: _formKey,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                TextFormField(
+                  validator: (val) => val!.isEmpty ? "Not be empty" : null,
+                  decoration: const InputDecoration(
+                      hintText: 'Please enter question.',
+                      labelText: 'Question',
+                      labelStyle: TextStyle(color: Colors.blue)),
+                  onChanged: (val) {
+                    question = val;
+                  },
+                  textInputAction: TextInputAction.next,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 5),
+                TextFormField(
+                  validator: (val) => val!.isEmpty ? "Not be empty" : null,
+                  decoration: const InputDecoration(
+                      hintText: 'Please enter option 1.',
+                      labelText: 'Option 1',
+                      labelStyle: TextStyle(color: Colors.blue)),
+                  onChanged: (val) {
+                    option1 = val;
+                  },
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  validator: (val) => val!.isEmpty ? "Not be empty" : null,
+                  decoration: const InputDecoration(
+                      hintText: "Please enter option 2.",
+                      labelText: 'Option 2',
+                      labelStyle: TextStyle(color: Colors.blue)),
+                  onChanged: (val) {
+                    option2 = val;
+                  },
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  validator: (val) => val!.isEmpty ? "Not be empty" : null,
+                  decoration: const InputDecoration(
+                      hintText: "Please enter option 3.",
+                      labelText: 'Option 3',
+                      labelStyle: TextStyle(color: Colors.blue)),
+                  onChanged: (val) {
+                    option3 = val;
+                  },
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  validator: (val) => val!.isEmpty ? "Not be empty" : null,
+                  decoration: const InputDecoration(
+                      hintText: "Please enter option 4.",
+                      labelText: 'Option 4',
+                      labelStyle: TextStyle(color: Colors.blue)),
+                  onChanged: (val) {
+                    option4 = val;
+                  },
+                  textInputAction: TextInputAction.done,
+                ),
+                const SizedBox(height: 20),
+                Row(children: const [
+                  Text(
+                    'Correct Answer',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  )
+                ]),
+                const SizedBox(height: 10),
+                Container(
+                  height: 45,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black, width: 1)),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      hint: const Text(
+                        'Select Option',
+                        style: TextStyle(color: Colors.black, fontSize: 18),
                       ),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        validator: (val) =>
-                            val!.isEmpty ? "Not be empty" : null,
-                        decoration: const InputDecoration(hintText: "Option 1"),
-                        onChanged: (val) {
-                          option1 = val;
-                        },
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        validator: (val) =>
-                            val!.isEmpty ? "Not be empty" : null,
-                        decoration: const InputDecoration(hintText: "Option 2"),
-                        onChanged: (val) {
-                          option2 = val;
-                        },
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        validator: (val) =>
-                            val!.isEmpty ? "Not be empty" : null,
-                        decoration: const InputDecoration(hintText: "Option 3"),
-                        onChanged: (val) {
-                          option3 = val;
-                        },
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        validator: (val) =>
-                            val!.isEmpty ? "Not be empty" : null,
-                        decoration: const InputDecoration(hintText: "Option 4"),
-                        onChanged: (val) {
-                          option4 = val;
-                        },
-                        textInputAction: TextInputAction.done,
-                      ),
-                      const SizedBox(height: 20),
-                      Row(children: const [
-                        Text(
-                          'Correct Answer',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 17),
-                        )
-                      ]),
-                      const SizedBox(height: 20),
-                      Container(
-                        height: 45,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black, width: 1)),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            hint: const Text(
-                              'Select Option',
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 18),
-                            ),
-                            value: selectOption,
-                            isExpanded: true,
-                            items: items.map(buildMainItem).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectOption = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                totalQuestion++;
-                              });
-                              uploadQuizData();
-                              Navigator.pop(context);
-                              EasyLoading.showSuccess('Added Successful!');
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: MediaQuery.of(context).size.width / 2 - 40,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 20),
-                              decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(30)),
-                              child: const Text(
-                                "Submit",
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                totalQuestion++;
-                              });
-                              uploadQuizData();
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: MediaQuery.of(context).size.width / 2 - 40,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 20),
-                              decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(30)),
-                              child: const Text(
-                                "Next Question",
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 60,
-                      ),
-                    ],
+                      value: selectOption,
+                      isExpanded: true,
+                      items: items.map(buildMainItem).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectOption = value;
+                        });
+                      },
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        uploadQuizData();
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    EditQuestionScreen(quizId: widget.quizId)));
+                        EasyLoading.showSuccess('Added Successful!');
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: gradientButton(context, 'Submit',
+                            MediaQuery.of(context).size.width / 2 - 50),
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                    GestureDetector(
+                      onTap: () {
+                        uploadQuizData();
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddQuestionScreen(
+                                      quizId: widget.quizId,
+                                      totalQuestion: totalQuestion.toString(),
+                                    )));
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: gradientButton(context, 'Next Question',
+                            MediaQuery.of(context).size.width / 2 - 50),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 60,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

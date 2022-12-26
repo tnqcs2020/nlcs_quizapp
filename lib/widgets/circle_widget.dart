@@ -20,6 +20,11 @@ class _CircleWidgetState extends State<CircleWidget> {
     return Container(
       height: 30,
       decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.teal, Colors.indigo, Colors.red],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+        ),
         borderRadius: BorderRadius.circular(50),
         border: Border.all(),
       ),
@@ -28,7 +33,9 @@ class _CircleWidgetState extends State<CircleWidget> {
             widget.text,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          backgroundColor: widget.bgColor),
+          backgroundColor: widget.bgColor == Colors.blue
+              ? Colors.transparent
+              : Colors.white),
     );
   }
 }

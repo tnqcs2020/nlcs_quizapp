@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class InfoUser {
   String? id;
-  String? name, email, phone, address, image;
+  String? name, email, phone, address;
 
   InfoUser({
     required this.id,
@@ -11,7 +11,6 @@ class InfoUser {
     required this.email,
     required this.phone,
     required this.address,
-    this.image,
   });
 
   Map<String, dynamic> toJson() => {
@@ -20,7 +19,6 @@ class InfoUser {
         'email': email,
         'phone': phone,
         'address': address,
-        'image': image,
       };
 
   static InfoUser fromJson(Map<String, dynamic> json) => InfoUser(
@@ -29,7 +27,6 @@ class InfoUser {
         email: json['email'],
         phone: json['phone'],
         address: json['address'],
-        image: json['image'],
       );
 }
 
@@ -43,7 +40,7 @@ Stream<List<InfoUser>> loadUsers() =>
     FirebaseFirestore.instance.collection('users').snapshots().map((snapshot) =>
         snapshot.docs.map((doc) => InfoUser.fromJson(doc.data())).toList());
 
-Future<InfoUser?>loadUser() async {
+Future<InfoUser?> loadUser() async {
   final docUser = FirebaseFirestore.instance
       .collection('users')
       .doc(FirebaseAuth.instance.currentUser?.uid);

@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:quiz_app/screens/home/home.dart';
+import 'package:quiz_app/screens/quiz/edit_quiz.dart';
 import 'package:quiz_app/screens/quiz/quiz_play.dart';
 import 'package:quiz_app/widgets/gradient_button.dart';
 
-late int setTime;
 late DocumentSnapshot snapshotInfoQuiz;
 
 class WelcomeQuiz extends StatefulWidget {
@@ -20,16 +21,19 @@ class WelcomeQuiz extends StatefulWidget {
 class WelcomeQuizScreen extends State<WelcomeQuiz> {
   @override
   Widget build(BuildContext context) {
-    setTime = widget.snapshotInfoQuiz['time'];
     snapshotInfoQuiz = widget.snapshotInfoQuiz;
     return Scaffold(
       drawerEnableOpenDragGesture: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
+        leading: BackButton(
+          onPressed: () {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()));
+          },
+        ),
         centerTitle: true,
         title: const Text(
-          "QUIZ APP",
+          "Quiz",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 30,
@@ -46,7 +50,8 @@ class WelcomeQuizScreen extends State<WelcomeQuiz> {
       ),
       body: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+        color: Colors.grey[100],
         child: Column(
           children: [
             Container(
@@ -88,50 +93,53 @@ class WelcomeQuizScreen extends State<WelcomeQuiz> {
                             ),
                           ),
                         ),
-                  // Container(
-                  //   height: 150,
-                  //   decoration: BoxDecoration(
-                  //     image: DecorationImage(
-                  //       image: NetworkImage(snapshotInfoQuiz['imageUrl']),
-                  //       fit: BoxFit.cover,
-                  //     ),
-                  //     // color: Colors.grey,
-                  //     borderRadius: const BorderRadius.all(Radius.circular(30)),
-                  //   ),
-                  // ),
                   const SizedBox(height: 20),
                   lineInfoQuiz('Topic', snapshotInfoQuiz['title']),
+                  const SizedBox(height: 10),
                   lineInfoQuiz('Category', snapshotInfoQuiz['categories']),
+                  const SizedBox(height: 10),
                   lineInfoQuiz('Shuffle', snapshotInfoQuiz['shuffle']),
-                  // snapshotInfoQuiz['time'] == 0
-                  //     ? lineInfoQuiz('Time', 'Unlimited time')
-                  //     : lineInfoQuiz('Time', '${snapshotInfoQuiz['time']} min'),
                 ],
               ),
             ),
             const SizedBox(
               height: 150,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const QuizPlay()));
-                  },
-                  child: gradientButton(context, 'Start', 170),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: gradientButton(context, 'Cancel', 170),
-                ),
-              ],
+            admin
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const QuizPlay()));
+                        },
+                        child: gradientButton(context, 'Start', 170),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditQuizScreen(
+                                      quizId: snapshotInfoQuiz['quizId'])));
+                        },
+                        child: gradientButton(context, 'Edit', 170),
+                      ),
+                    ],
+                  )
+                : GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const QuizPlay()));
+                    },
+                    child: gradientButton(context, 'Start', 170),
+                  ),
+            const SizedBox(
+              width: 10,
             ),
           ],
         ),

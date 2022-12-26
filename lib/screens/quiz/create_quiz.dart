@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quiz_app/widgets/gradient_button.dart';
@@ -24,8 +23,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
   final titleCtrl = TextEditingController();
   final timeCtrl = TextEditingController();
   String? imageUrl;
-  String shuffle = 'N';
+  String? shuffle;
   late String quizId;
+  final items = ['Question', 'Answer', 'Question And Answer', 'None'];
 
   createQuiz() async {
     quizId = randomAlphaNumeric(20);
@@ -34,8 +34,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
         quizId: quizId,
         title: titleCtrl.text,
         categories: categoriesCtrl.text,
-        time: int.parse(timeCtrl.text),
-        shuffle: shuffle,
+        shuffle: (shuffle == null) ? 'None' : shuffle,
         imageUrl: (imageUrl == null) ? '' : imageUrl,
       );
       addQuizData(infoQuiz).then(
@@ -43,7 +42,10 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => AddQuestionScreen(quizId: infoQuiz.quizId!, totalQuestion: '0',))),
+                  builder: (context) => AddQuestionScreen(
+                        quizId: infoQuiz.quizId!,
+                        totalQuestion: '0',
+                      ))),
         },
       );
     }
@@ -61,249 +63,170 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       FirebaseStorage.instance.refFromURL(imageUrl!).delete(),
                     },
                 }),
-        title: const Text('New Quiz'),
+        title: const Text(
+          'New Quiz',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 30,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.green,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
               gradient: LinearGradient(
-            colors: const [Colors.teal, Colors.indigo, Colors.red],
+            colors: [Colors.teal, Colors.indigo, Colors.red],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
           )),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    imageUrl != null
-                        ? Container(
-                            height: 140,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(imageUrl!),
-                                fit: BoxFit.cover,
+      body: Container(
+        constraints:
+            BoxConstraints(minHeight: MediaQuery.of(context).size.height),
+        color: Colors.grey[100],
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      imageUrl != null
+                          ? Container(
+                              height: 140,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(imageUrl!),
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(30)),
                               ),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(30)),
-                            ),
-                            alignment: Alignment.bottomCenter,
-                            child: GestureDetector(
-                              onTap: uploadImage,
-                              child: const CircleAvatar(
-                                child: Icon(Icons.camera_alt),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            height: 140,
-                            width: double.infinity,
-                            decoration: const BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30)),
-                            ),
-                            alignment: Alignment.center,
-                            child: SizedBox(
-                              height: 80,
-                              width: 80,
+                              alignment: Alignment.bottomCenter,
                               child: GestureDetector(
                                 onTap: uploadImage,
-                                child: SvgPicture.asset(
-                                  'assets/icons/image-slash.svg',
-                                  height: 30,
-                                  width: 30,
+                                child: const CircleAvatar(
+                                  child: Icon(Icons.camera_alt),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              height: 140,
+                              width: double.infinity,
+                              decoration: const BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(30)),
+                              ),
+                              alignment: Alignment.center,
+                              child: SizedBox(
+                                height: 80,
+                                width: 80,
+                                child: GestureDetector(
+                                  onTap: uploadImage,
+                                  child: SvgPicture.asset(
+                                    'assets/icons/image-slash.svg',
+                                    height: 30,
+                                    width: 30,
+                                  ),
                                 ),
                               ),
                             ),
+                      const SizedBox(height: 30),
+                      TextFormField(
+                        controller: titleCtrl,
+                        decoration: const InputDecoration(
+                          hintText: 'Please enter your topic\'s test.',
+                          labelText: 'Topic',
+                          prefixIcon: Icon(Icons.menu_book),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
                           ),
-                    const SizedBox(height: 30),
-                    TextFormField(
-                      controller: titleCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Please enter your topic\'s test.',
-                        labelText: 'Topic',
-                        prefixIcon: Icon(Icons.menu_book),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        ),
+                        validator: (value) => ((value?.length ?? 0) < 6
+                            ? 'At least 6 characters.'
+                            : null),
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: categoriesCtrl,
+                        decoration: const InputDecoration(
+                          hintText: 'Please enter your\'s category.',
+                          labelText: 'Category',
+                          prefixIcon: Icon(Icons.category),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                          ),
+                        ),
+                        validator: (value) => ((value?.length ?? 0) < 2
+                            ? 'At least 4 characters.'
+                            : null),
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                child: Column(
+                  children: [
+                    Row(children: const [
+                      Text(
+                        'Shuffle',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      )
+                    ]),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 45,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.black, width: 1)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          hint: const Text(
+                            'Select type of shuffle',
+                            style: TextStyle(color: Colors.black, fontSize: 18),
+                          ),
+                          value: shuffle,
+                          isExpanded: true,
+                          items: items.map(buildMainItem).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              shuffle = value;
+                            });
+                          },
                         ),
                       ),
-                      validator: (value) => ((value?.length ?? 0) < 6
-                          ? 'At least 6 characters.'
-                          : null),
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.next,
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: categoriesCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Please enter your\'s category.',
-                        labelText: 'Category',
-                        prefixIcon: Icon(Icons.category),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                    const SizedBox(height: 40),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: GestureDetector(
+                        onTap: createQuiz,
+                        child: gradientButton(
+                          context,
+                          'Create Quiz',
+                          MediaQuery.of(context).size.width - 48,
                         ),
                       ),
-                      validator: (value) => ((value?.length ?? 0) < 4
-                          ? 'At least 4 characters.'
-                          : null),
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: timeCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Please enter time of quiz.',
-                        labelText: 'Time Of Quiz',
-                        prefixIcon: Icon(Icons.timer),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                        ),
-                      ),
-                      validator: (value) => (int.parse(value!) == 0
-                          ? 'Number(>= 1) or empty.'
-                          : null),
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.done,
                     ),
                   ],
                 ),
               ),
-            ),
-            const Text(
-              'Shuffle',
-              style: TextStyle(fontSize: 18),
-            ),
-            // Padding(
-            //   padding: const EdgeInsets.all(15),
-            //   child: Row(
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     children: [
-            //       Column(
-            //         children: [
-            //           shuffleQuestion
-            //               ? GestureDetector(
-            //               onTap: () {
-            //                 setState(() {
-            //                   shuffleQuestion = false;
-            //                 });
-            //               },
-            //               child: Row(
-            //                 children: [
-            //                   Container(
-            //                     height: 20,
-            //                     width: 20,
-            //                     decoration: BoxDecoration(
-            //                       border: Border.all(),
-            //                     ),
-            //                     child: const FaIcon(
-            //                       FontAwesomeIcons.check,
-            //                       size: 18,
-            //                       color: Colors.red,
-            //                     ),
-            //                   ),
-            //                   const SizedBox(width: 5),
-            //                   const Text('Question'),
-            //                 ],
-            //               ))
-            //               : GestureDetector(
-            //               onTap: () {
-            //                 setState(() {
-            //                   shuffleQuestion = true;
-            //                 });
-            //               },
-            //               child: Row(
-            //                 children: [
-            //                   Container(
-            //                     height: 20,
-            //                     width: 20,
-            //                     decoration: BoxDecoration(
-            //                       border: Border.all(),
-            //                     ),
-            //                   ),
-            //                   const SizedBox(width: 5),
-            //                   const Text('Question'),
-            //                 ],
-            //               )),
-            //         ],
-            //       ),
-            //       const SizedBox(width: 50),
-            //       Column(
-            //         children: [
-            //           shuffleAnswer
-            //               ? GestureDetector(
-            //               onTap: () {
-            //                 setState(() {
-            //                   shuffleAnswer = false;
-            //                 });
-            //               },
-            //               child: Row(
-            //                 children: [
-            //                   Container(
-            //                     height: 20,
-            //                     width: 20,
-            //                     decoration: BoxDecoration(
-            //                       border: Border.all(),
-            //                     ),
-            //                     child: const FaIcon(
-            //                       FontAwesomeIcons.check,
-            //                       size: 18,
-            //                       color: Colors.red,
-            //                     ),
-            //                   ),
-            //                   const SizedBox(width: 5),
-            //                   const Text('Answer'),
-            //                 ],
-            //               ))
-            //               : GestureDetector(
-            //               onTap: () {
-            //                 setState(() {
-            //                   shuffleAnswer = true;
-            //                 });
-            //               },
-            //               child: Row(
-            //                 children: [
-            //                   Container(
-            //                     height: 20,
-            //                     width: 20,
-            //                     decoration: BoxDecoration(
-            //                       border: Border.all(),
-            //                     ),
-            //                   ),
-            //                   const SizedBox(width: 5),
-            //                   const Text('Answer'),
-            //                 ],
-            //               )),
-            //         ],
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: GestureDetector(
-                onTap: createQuiz,
-                child: gradientButton(
-                  context,
-                  'Create Quiz',
-                  MediaQuery.of(context).size.width - 48,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -339,5 +262,12 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
     } else {
       print('Permission not granted. Try again with permission access');
     }
+  }
+
+  DropdownMenuItem<String> buildMainItem(String item) {
+    return DropdownMenuItem(
+      value: item,
+      child: Text(item, style: const TextStyle(fontSize: 18)),
+    );
   }
 }

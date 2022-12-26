@@ -7,7 +7,6 @@ class InfoQuiz {
     required this.quizId,
     required this.title,
     required this.categories,
-    this.time,
     required this.shuffle,
     this.imageUrl,
   });
@@ -16,7 +15,6 @@ class InfoQuiz {
         'quizId': quizId,
         'title': title,
         'categories': categories,
-        'time': time,
         'shuffle': shuffle,
         'imageUrl': imageUrl,
       };
@@ -25,7 +23,6 @@ class InfoQuiz {
         quizId: json['quizId'],
         title: json['name'],
         categories: json['categories'],
-        time: json['time'],
         shuffle: json['shuffle'],
         imageUrl: json['imageUrl'],
       );
@@ -36,9 +33,9 @@ Future addQuizData(InfoQuiz quiz) async {
     'quizId': quiz.quizId,
     'title': quiz.title,
     'categories': quiz.categories,
-    'time': quiz.time,
     'shuffle': quiz.shuffle,
     'imageUrl': quiz.imageUrl,
+    'totalQuestion': '0'
   }).catchError((e) {
     print(e);
   });
@@ -77,7 +74,7 @@ Future addQuestionData(quizData, String? quizId) async {
   }
 }
 
-updateQuestionData(quizData, String? quizId) async {
+Future updateQuestionData(quizData, String? quizId) async {
   await FirebaseFirestore.instance
       .collection("quiz")
       .doc(quizId)
@@ -96,12 +93,12 @@ updateQuestionData(quizData, String? quizId) async {
   });
 }
 
-deleteQuestionData(deleteQues) async {
+Future deleteQuestionData(deleteQues) async {
   await FirebaseFirestore.instance
       .collection('quiz')
       .doc(deleteQues['quizId'])
       .update({
-    "totalQuestion": (int.parse(deleteQues['totalQuestion'])-1).toString(),
+    "totalQuestion": (int.parse(deleteQues['totalQuestion']) - 1).toString(),
   }).catchError((e) {
     print(e);
   });
@@ -114,5 +111,4 @@ deleteQuestionData(deleteQues) async {
       .catchError((e) {
     print(e);
   });
-
 }

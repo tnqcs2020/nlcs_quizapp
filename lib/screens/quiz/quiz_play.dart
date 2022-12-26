@@ -108,19 +108,16 @@ class _QuizPlayState extends State<QuizPlay> {
                 child: const Text('Okay'),
                 onPressed: () async {
                   var historyId = randomAlphaNumeric(20);
-                  DateTime now = DateTime.now();
-                  String formattedDate =
-                      DateFormat('H:mm:s, d/M/y').format(now);
                   await FirebaseFirestore.instance
                       .collection('historyQuiz')
                       .doc(historyId)
                       .set({
                     'historyId': historyId,
                     'user': _auth.currentUser?.email,
+                    'username': infoUser.name,
                     'quizId': snapshotInfoQuiz['quizId'],
                     'title': snapshotInfoQuiz['title'],
                     'categories': snapshotInfoQuiz['categories'],
-                    'date': formattedDate,
                     'score': correctNumber,
                     'timestamp': DateTime.now(),
                   }).catchError((e) {

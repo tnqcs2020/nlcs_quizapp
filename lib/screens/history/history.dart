@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
+import '../home/home.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -16,6 +18,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()));
+          },
+        ),
         centerTitle: true,
         title: const Text(
           "Quiz's History",
@@ -33,28 +41,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
           )),
         ),
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection("historyQuiz")
-            .where('user', isEqualTo: '${_auth?.email}')
-            .snapshots(),
-        builder: (context, AsyncSnapshot snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-          return Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: ListView.builder(
+      body: Container(
+        constraints:
+            BoxConstraints(minHeight: MediaQuery.of(context).size.height),
+        color: Colors.grey[100],
+        child: StreamBuilder(
+          stream: admin
+              ? FirebaseFirestore.instance
+                  .collection("historyQuiz")
+                  .orderBy('timestamp', descending: true)
+                  .snapshots()
+              : FirebaseFirestore.instance
+                  .collection("historyQuiz")
+                  .where('user', isEqualTo: _auth!.email)
+                  .snapshots(),
+          builder: (context, AsyncSnapshot snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            return ListView.builder(
               itemCount: snapshot.data.docs.length,
               itemBuilder: (context, index) {
                 final DocumentSnapshot dataSnapshot;
                 dataSnapshot = snapshot.data.docs[index];
+                String formattedDate = DateFormat('hh:mm:ss, d/M/y')
+                    .format(dataSnapshot['timestamp'].toDate());
                 return Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: index != snapshot.data.docs.length
+                      ? const EdgeInsets.fromLTRB(20, 20, 20, 0)
+                      : const EdgeInsets.fromLTRB(20, 20, 20, 20),
                   child: Container(
                     constraints: const BoxConstraints(
                       minHeight: 100,
@@ -115,7 +134,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         fontSize: 15),
                                     children: [
                                       TextSpan(
-                                        text: dataSnapshot['date'],
+                                        text: formattedDate,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 15),
+                                      ),
+                                    ],
+                                  )),
+                              Text.rich(
+                                  overflow: TextOverflow.visible,
+                                  TextSpan(
+                                    text: "Username: ",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                    children: [
+                                      TextSpan(
+                                        text: dataSnapshot['username'],
                                         style: const TextStyle(
                                             fontWeight: FontWeight.normal,
                                             fontSize: 15),
@@ -124,9 +159,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   )),
                             ],
                           ),
-                        ),
-                        const SizedBox(
-                          width: 15,
                         ),
                         SizedBox(
                           width: 50,
@@ -141,85 +173,94 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               Text(
                                 dataSnapshot['score'].toString(),
                                 style: const TextStyle(
-                                    fontSize: 50, color: Colors.red),
+                                    fontSize: 40, color: Colors.red),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(
-                          width: 15,
+                          width: 10,
                         ),
-                        SizedBox(
-                          width: 40,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: const Text(
-                                            'Warning',
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                          titleTextStyle: const TextStyle(
-                                              fontSize: 30, color: Colors.blue),
-                                          content: const Text(
-                                              'Do you want to delete a history?'),
-                                          actions: [
-                                            TextButton(
-                                              style: TextButton.styleFrom(
-                                                textStyle: Theme.of(context)
-                                                    .textTheme
-                                                    .labelLarge,
-                                              ),
-                                              child: const Text('Yes'),
-                                              onPressed: () async {
-                                                await FirebaseFirestore.instance
-                                                    .collection('historyQuiz')
-                                                    .doc(dataSnapshot[
-                                                        'historyId'])
-                                                    .delete();
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                            TextButton(
-                                              style: TextButton.styleFrom(
-                                                textStyle: Theme.of(context)
-                                                    .textTheme
-                                                    .labelLarge,
-                                              ),
-                                              child: const Text('No'),
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      });
-                                },
-                                child: const CircleAvatar(
-                                    backgroundColor: Colors.lightBlueAccent,
-                                    radius: 50,
-                                    child: FaIcon(
-                                      FontAwesomeIcons.trashCan,
-                                      size: 23,
-                                      color: Colors.black,
-                                    )),
-                              ),
-                            ],
-                          ),
-                        )
+                        dataSnapshot['user'] == _auth?.email
+                            ? SizedBox(
+                                width: 40,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () async {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text(
+                                                  'Warning',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                                titleTextStyle: const TextStyle(
+                                                    fontSize: 30,
+                                                    color: Colors.blue),
+                                                content: const Text(
+                                                    'Do you want to delete a history?'),
+                                                actions: [
+                                                  TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .labelLarge,
+                                                    ),
+                                                    child: const Text('Yes'),
+                                                    onPressed: () async {
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection(
+                                                              'historyQuiz')
+                                                          .doc(dataSnapshot[
+                                                              'historyId'])
+                                                          .delete();
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      textStyle:
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .labelLarge,
+                                                    ),
+                                                    child: const Text('No'),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            });
+                                      },
+                                      child: const CircleAvatar(
+                                          backgroundColor:
+                                              Colors.lightBlueAccent,
+                                          radius: 50,
+                                          child: FaIcon(
+                                            FontAwesomeIcons.trashCan,
+                                            size: 23,
+                                            color: Colors.black,
+                                          )),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox(),
                       ],
                     ),
                   ),
                 );
               },
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
